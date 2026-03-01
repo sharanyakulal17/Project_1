@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Adaptive Persona Explainer</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root{
+            --bg-a: #3b2f2f; /* deep brown */
+            --bg-b: #eaddcf; /* warm beige */
+            --card: rgba(255,255,255,0.06);
+            --muted: rgba(255,255,255,0.82);
+            --accent-start: #b87333; /* copper start */
+            --accent-end: #e0a472; /* copper highlight */
+            --glass: rgba(255,255,255,0.04);
+        }
+
+        *{box-sizing:border-box}
+        html,body{height:100%}
+        body{
+            margin:0;
+            font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            background: linear-gradient(180deg,var(--bg-a),var(--bg-b));
+            color:#e6eef8;
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            padding:40px 20px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+        }
+
+        .wrap{
+            width:100%;
+            max-width:920px;
+            margin:auto;
+        }
+
+        .card{
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+            border-radius:16px;
+            padding:28px;
+            box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+            backdrop-filter: blur(6px) saturate(120%);
+            border: 1px solid rgba(255,255,255,0.04);
+            animation: fadeUp .32s ease both;
+        }
+
+        .header{
+            display:flex;
+            align-items:center;
+            gap:16px;
+            margin-bottom:18px;
+        }
+
+        .logo{
+            width:56px;
+            height:56px;
+            border-radius:12px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            font-size:28px;
+            background: linear-gradient(135deg,var(--accent-start),var(--accent-end));
+            box-shadow: 0 6px 18px rgba(184,115,51,0.18);
+        }
+
+        h1{font-size:20px;margin:0}
+        p.lead{margin:0;color:var(--muted);font-size:13px}
+
+        form{display:grid;grid-template-columns:1fr 360px;gap:18px;margin-top:18px}
+
+        .left, .right{min-width:0}
+
+        textarea{
+            width:100%;min-height:140px;padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);
+            background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+            color:inherit;resize:vertical;font-size:14px;line-height:1.45;
+        }
+
+        .controls{display:flex;flex-direction:column;gap:12px}
+
+        select, button{
+            width:100%;padding:12px;border-radius:10px;border:none;font-weight:600;cursor:pointer;
+        }
+
+        select{background:var(--glass);color:var(--muted);border:1px solid rgba(255,255,255,0.03)}
+
+        button{
+            background: linear-gradient(90deg,var(--accent-start),var(--accent-end));
+            color:white;border: none;box-shadow: 0 8px 18px rgba(140,75,30,0.22);transition:transform .14s ease, box-shadow .14s ease;
+        }
+
+        button:active{transform:translateY(1px)}
+
+        button.loading{opacity:0.9}
+        button.loading::after{
+            content: '';
+            display:inline-block;
+            width:14px;height:14px;margin-left:10px;border-radius:50%;
+            border:2px solid rgba(255,255,255,0.28);border-top-color:white;vertical-align:middle;
+            animation:spin .9s linear infinite;
+        }
+
+        @keyframes spin{to{transform:rotate(360deg)}}
+
+        .output{position:relative}
+        .copy{
+            position:absolute;right:12px;top:12px;background:transparent;border:1px solid rgba(255,255,255,0.06);
+            color:var(--muted);padding:6px 10px;border-radius:8px;font-size:13px;cursor:pointer;
+        }
+
+        .copy:active{transform:translateY(1px)}
+
+        .output.fade-in{animation:fadeUp .22s ease both}
+
+        @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+        .output{
+            margin-top:18px;padding:16px;border-radius:10px;background:rgba(6,11,28,0.6);
+            color:#dbeafe;font-size:15px;white-space:pre-wrap;min-height:80px;border:1px solid rgba(255,255,255,0.02);
+        }
+
+        footer{margin-top:14px;color:var(--muted);font-size:12px;text-align:center}
+
+        @media (max-width:880px){
+            form{grid-template-columns:1fr;}
+            .controls{flex-direction:row}
+            .controls > *{flex:1}
+        }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <div class="card">
+            <div class="header">
+                <div class="logo">☕</div>
+                <div>
+                    <h1>Adaptive Persona Explainer</h1>
+                    <p class="lead">Turn complex topics into memorable explanations with playful personas.</p>
+                </div>
+            </div>
+
+            <form id="explainerForm" onsubmit="event.preventDefault(); sendRequest();">
+                <div class="left">
+                    <label for="topic" style="display:block;margin-bottom:8px;color:var(--muted);font-size:13px">Topic</label>
+                    <textarea id="topic" placeholder="Enter a complex topic, e.g. quantum entanglement..."></textarea>
+
+                    <div class="output" id="output" aria-live="polite">
+                        <div id="outputText"></div>
+                        <button id="copyBtn" class="copy" type="button" style="display:none">Copy</button>
+                    </div>
+                </div>
+
+                <div class="right">
+                    <div style="display:flex;flex-direction:column;gap:12px">
+                        <div>
+                            <label for="style" style="display:block;margin-bottom:8px;color:var(--muted);font-size:13px">Persona</label>
+                            <select id="style">
+                                <option value="shakespeare">Shakespeare</option>
+                                <option value="pirate">Pirate</option>
+                                <option value="bandit">Bandit</option>
+                                <option value="teacher">Friendly Teacher</option>
+                                <option value="sci">Science Communicator</option>
+                            </select>
+                        </div>
+
+                        <div class="controls">
+                            <button id="explainBtn" type="submit">Explain</button>
+                            <button id="clearBtn" type="button" style="background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted);font-weight:600">Clear</button>
+                        </div>
+
+                        <div style="margin-top:auto;color:var(--muted);font-size:13px">Tip: Try short prompts for concise answers, longer for more detail.</div>
+                    </div>
+                </div>
+            </form>
+
+            <footer>Made with care • Adaptive Persona Explainer</footer>
+        </div>
+    </div>
+
+    <script>
+        const btn = document.getElementById('explainBtn');
+        const clearBtn = document.getElementById('clearBtn');
+        const output = document.getElementById('output');
+        const outputText = document.getElementById('outputText');
+        const copyBtn = document.getElementById('copyBtn');
+
+        clearBtn.addEventListener('click', ()=>{
+            document.getElementById('topic').value = '';
+            outputText.textContent = '';
+            output.classList.remove('fade-in');
+            copyBtn.style.display = 'none';
+        });
+
+        copyBtn.addEventListener('click', async ()=>{
+            try{
+                await navigator.clipboard.writeText(outputText.textContent || '');
+                copyBtn.textContent = 'Copied';
+                setTimeout(()=> copyBtn.textContent = 'Copy', 1600);
+            }catch(e){
+                copyBtn.textContent = 'Unable';
+                setTimeout(()=> copyBtn.textContent = 'Copy', 1600);
+            }
+        });
+
+        async function sendRequest(){
+            const topic = document.getElementById('topic').value.trim();
+            const style = document.getElementById('style').value;
+            if(!topic){ outputText.textContent = 'Please enter a topic to explain.'; output.classList.add('fade-in'); return }
+
+            btn.disabled = true;
+            btn.classList.add('loading');
+            outputText.textContent = '';
+            output.classList.remove('fade-in');
+
+            try{
+                const resp = await fetch('/explain',{
+                    method:'POST',headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({ topic, style })
+                });
+
+                const data = await resp.json();
+                if(data.explanation){
+                    outputText.textContent = data.explanation;
+                    copyBtn.style.display = 'inline-block';
+                    output.classList.add('fade-in');
+                } else {
+                    outputText.textContent = data.error || 'Unexpected response from server.';
+                    copyBtn.style.display = 'none';
+                    output.classList.add('fade-in');
+                }
+            }catch(err){
+                outputText.textContent = 'Network error: ' + (err.message || err);
+                copyBtn.style.display = 'none';
+                output.classList.add('fade-in');
+            } finally {
+                btn.disabled = false;
+                btn.classList.remove('loading');
+            }
+        }
+    </script>
+</body>
+</html>
